@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Xuân Tài & Ngọc Thảo 💖</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Be+Vietnam+Pro:wght@300;400;500&display=swap" rel="stylesheet">
-
 <style>
 :root {
   --pink: #e8496a;
@@ -16,12 +15,10 @@
   --cream: #fff8f0;
   --text: #3a1a22;
   --text-muted: #8c5566;
-  --glass: rgba(255,255,255,0.18);
-  --glass-border: rgba(255,255,255,0.35);
+  --glass: rgba(255,255,255,0.10);
+  --glass-border: rgba(255,255,255,0.18);
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
   font-family: 'Be Vietnam Pro', sans-serif;
   background: #1a0a0f;
@@ -31,28 +28,34 @@ body {
 }
 
 /* === BG === */
-#bgWrap {
-  position: fixed; inset: 0; z-index: 0;
-  background: radial-gradient(ellipse at 30% 20%, #3d0d1f 0%, #1a0a0f 60%);
-  overflow: hidden;
-}
+#bgWrap { position: fixed; inset: 0; z-index: 0; background: radial-gradient(ellipse at 30% 20%, #3d0d1f 0%, #1a0a0f 60%); overflow: hidden; }
 #bgImg {
   position: absolute; inset: 0;
   background-size: cover; background-position: center;
-  opacity: 0.22; transition: opacity 0.5s;
+  opacity: 0; transition: opacity 1.2s ease;
 }
-.mesh {
+#bgImg.visible { opacity: 0.22; }
+#bgImg2 {
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 70% 80%, rgba(200,50,80,0.15) 0%, transparent 60%),
-              radial-gradient(ellipse at 20% 50%, rgba(212,168,83,0.08) 0%, transparent 50%);
+  background-size: cover; background-position: center;
+  opacity: 0; transition: opacity 1.2s ease;
 }
+#bgImg2.visible { opacity: 0.22; }
+.mesh { position: absolute; inset: 0; background: radial-gradient(ellipse at 70% 80%, rgba(200,50,80,0.15) 0%, transparent 60%), radial-gradient(ellipse at 20% 50%, rgba(212,168,83,0.08) 0%, transparent 50%); }
+
+/* === BG SLIDE INDICATOR === */
+.bg-dots {
+  position: fixed; bottom: 10px; right: 22px;
+  display: flex; gap: 5px; z-index: 50; pointer-events: none;
+}
+.bg-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(255,255,255,0.25); transition: all 0.3s;
+}
+.bg-dot.active { background: var(--gold); width: 14px; border-radius: 3px; }
 
 /* === PETALS === */
-.petal {
-  position: fixed; top: -40px; pointer-events: none; z-index: 1;
-  font-size: 18px; opacity: 0;
-  animation: fallDown linear infinite;
-}
+.petal { position: fixed; top: -40px; pointer-events: none; z-index: 1; font-size: 18px; opacity: 0; animation: fallDown linear infinite; }
 @keyframes fallDown {
   0%   { transform: translateY(0) rotate(0deg) translateX(0); opacity: 0.9; }
   100% { transform: translateY(110vh) rotate(720deg) translateX(60px); opacity: 0; }
@@ -62,174 +65,133 @@ body {
 .page { position: relative; z-index: 2; }
 
 /* === HEADER === */
-.hero {
-  text-align: center;
-  padding: 60px 20px 40px;
-  position: relative;
-}
-.hero-date-label {
-  font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
-  color: var(--gold); margin-bottom: 12px;
-}
+.hero { text-align: center; padding: 60px 20px 40px; position: relative; }
+.hero-date-label { font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
 .hero h1 {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(2.2rem, 8vw, 4.5rem);
-  font-weight: 400; line-height: 1.1;
+  font-size: clamp(2.2rem, 8vw, 4.5rem); font-weight: 400; line-height: 1.1;
   background: linear-gradient(135deg, #fff 0%, var(--pink-light) 50%, var(--gold) 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .hero h1 em { font-style: italic; }
-.divider {
-  display: flex; align-items: center; gap: 12px;
-  justify-content: center; margin: 16px 0;
-  color: var(--gold); font-size: 13px; letter-spacing: 0.1em;
-}
-.divider::before, .divider::after {
-  content: ''; flex: 1; max-width: 80px;
-  height: 0.5px; background: linear-gradient(90deg, transparent, var(--gold));
-}
+.divider { display: flex; align-items: center; gap: 12px; justify-content: center; margin: 16px 0; color: var(--gold); font-size: 13px; letter-spacing: 0.1em; }
+.divider::before, .divider::after { content: ''; flex: 1; max-width: 80px; height: 0.5px; background: linear-gradient(90deg, transparent, var(--gold)); }
 .divider::after { background: linear-gradient(90deg, var(--gold), transparent); }
 
 /* === GLASS PANEL === */
-.glass {
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  border: 0.5px solid var(--glass-border);
-  border-radius: 20px;
-}
+.glass { background: var(--glass); backdrop-filter: blur(20px); border: 0.5px solid var(--glass-border); border-radius: 20px; }
 
 /* === COUNTDOWN === */
-.countdown-wrap {
-  max-width: 500px; margin: 0 auto 40px;
-  padding: 24px 20px; text-align: center;
-}
-.countdown-label {
-  font-size: 12px; letter-spacing: 0.15em; color: var(--pink-light);
-  text-transform: uppercase; margin-bottom: 16px;
-}
-.countdown-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-}
-.cd-box {
-  background: rgba(232,73,106,0.15);
-  border: 0.5px solid rgba(232,73,106,0.3);
-  border-radius: 12px; padding: 12px 4px;
-}
-.cd-num {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(1.6rem, 5vw, 2.4rem);
-  font-weight: 700; color: white; line-height: 1;
-}
+.countdown-wrap { max-width: 500px; margin: 0 auto 40px; padding: 24px 20px; text-align: center; }
+.countdown-label { font-size: 12px; letter-spacing: 0.15em; color: var(--pink-light); text-transform: uppercase; margin-bottom: 16px; }
+.countdown-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.cd-box { background: rgba(232,73,106,0.15); border: 0.5px solid rgba(232,73,106,0.3); border-radius: 12px; padding: 12px 4px; }
+.cd-num { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 5vw, 2.4rem); font-weight: 700; color: white; line-height: 1; }
 .cd-unit { font-size: 10px; color: var(--pink-light); letter-spacing: 0.1em; margin-top: 4px; }
-.wedding-date-input {
-  background: rgba(255,255,255,0.08);
-  border: 0.5px solid rgba(255,255,255,0.2);
-  border-radius: 10px; color: white;
-  padding: 8px 14px; font-size: 13px;
-  margin-top: 14px; width: 180px;
-  font-family: 'Be Vietnam Pro', sans-serif;
-}
+.wedding-date-input { background: rgba(255,255,255,0.08); border: 0.5px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; padding: 8px 14px; font-size: 13px; margin-top: 14px; width: 180px; font-family: 'Be Vietnam Pro', sans-serif; }
 .wedding-date-input::-webkit-calendar-picker-indicator { filter: invert(1); }
 
 /* === DAYS TOGETHER === */
-.days-together {
-  text-align: center; margin-bottom: 8px;
-  font-size: clamp(14px, 3vw, 17px);
-  color: var(--pink-light);
-}
+.days-together { text-align: center; margin-bottom: 8px; font-size: clamp(14px, 3vw, 17px); color: var(--pink-light); }
 .days-together strong { color: white; font-size: 1.3em; }
 
 /* === MUSIC PANEL === */
-.music-panel {
-  max-width: 380px; margin: 0 auto 30px;
-  padding: 20px;
-}
-.music-title {
-  font-size: 13px; color: var(--pink-light); margin-bottom: 14px; text-align: center;
-  display: flex; align-items: center; gap: 8px; justify-content: center;
-}
-.music-now {
-  font-family: 'Playfair Display', serif;
-  font-size: 16px; text-align: center; margin-bottom: 12px;
-  color: white; min-height: 22px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.progress-bar {
-  width: 100%; height: 4px;
-  background: rgba(255,255,255,0.15); border-radius: 10px;
-  cursor: pointer; margin-bottom: 12px;
-}
-.progress-fill {
-  height: 100%; border-radius: 10px; width: 0%;
-  background: linear-gradient(90deg, var(--pink), var(--gold));
-  transition: width 0.3s linear;
-}
-.time-row {
-  display: flex; justify-content: space-between;
-  font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 12px;
-}
-.ctrl-row {
-  display: flex; align-items: center; justify-content: center; gap: 14px;
-}
-.ctrl-btn {
-  background: rgba(255,255,255,0.08);
-  border: 0.5px solid rgba(255,255,255,0.15);
-  color: white; border-radius: 50%;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-}
+.music-panel { max-width: 400px; margin: 0 auto 30px; padding: 20px; }
+.music-title { font-size: 13px; color: var(--pink-light); margin-bottom: 14px; text-align: center; display: flex; align-items: center; gap: 8px; justify-content: center; }
+.music-now { font-family: 'Playfair Display', serif; font-size: 16px; text-align: center; margin-bottom: 12px; color: white; min-height: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.15); border-radius: 10px; cursor: pointer; margin-bottom: 12px; }
+.progress-fill { height: 100%; border-radius: 10px; width: 0%; background: linear-gradient(90deg, var(--pink), var(--gold)); transition: width 0.3s linear; }
+.time-row { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 12px; }
+.ctrl-row { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.ctrl-btn { background: rgba(255,255,255,0.08); border: 0.5px solid rgba(255,255,255,0.15); color: white; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
 .ctrl-btn:hover { background: rgba(232,73,106,0.3); }
 .ctrl-btn.lg { width: 46px; height: 46px; font-size: 18px; }
 .ctrl-btn.sm { width: 36px; height: 36px; font-size: 14px; }
-.vol-row {
-  display: flex; align-items: center; gap: 8px; margin-top: 12px;
-}
+.vol-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
 .vol-row span { font-size: 14px; }
-input[type=range] {
-  flex: 1; height: 3px; cursor: pointer; accent-color: var(--pink);
-}
+input[type=range] { flex: 1; height: 3px; cursor: pointer; accent-color: var(--pink); }
 
-/* === UPLOADS ROW === */
-.uploads {
-  max-width: 380px; margin: 0 auto 30px;
-  padding: 20px; display: grid; gap: 12px;
-}
-.up-item label {
-  display: block; font-size: 11px; color: var(--pink-light);
-  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;
-}
-.file-btn {
-  display: block; width: 100%; padding: 9px 14px;
-  background: rgba(255,255,255,0.06); border: 0.5px dashed rgba(255,255,255,0.25);
-  border-radius: 10px; color: rgba(255,255,255,0.7);
-  font-size: 12px; cursor: pointer; text-align: center;
-  transition: all 0.2s;
-}
-.file-btn:hover { border-color: var(--pink); color: var(--pink-light); }
-input[type=file] { display: none; }
-input[type=date].love-date {
-  width: 100%; padding: 9px 14px;
-  background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.2);
-  border-radius: 10px; color: white; font-size: 13px;
+/* === LYRIC SEARCH IN MUSIC PANEL === */
+.lyric-search-row { margin-top: 14px; display: flex; gap: 8px; align-items: center; }
+.lyric-search-input {
+  flex: 1; background: rgba(255,255,255,0.07); border: 0.5px solid rgba(255,255,255,0.18);
+  border-radius: 10px; color: white; padding: 7px 12px; font-size: 12px;
   font-family: 'Be Vietnam Pro', sans-serif;
 }
+.lyric-search-input::placeholder { color: rgba(255,255,255,0.3); }
+.lyric-search-btn {
+  background: rgba(232,73,106,0.3); border: 0.5px solid rgba(232,73,106,0.5);
+  border-radius: 10px; color: white; padding: 7px 12px; font-size: 12px;
+  cursor: pointer; white-space: nowrap; transition: all 0.2s;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+.lyric-search-btn:hover { background: rgba(232,73,106,0.5); }
+.lyric-status { font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; margin-top: 6px; min-height: 16px; }
+
+/* === FILE UPLOAD ITEMS === */
+.up-item label { display: block; font-size: 11px; color: var(--pink-light); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+.up-item .folder-hint { font-size: 10px; color: rgba(255,255,255,0.3); margin-bottom: 6px; font-style: italic; }
+.file-btn { display: block; width: 100%; padding: 9px 14px; background: rgba(255,255,255,0.06); border: 0.5px dashed rgba(255,255,255,0.25); border-radius: 10px; color: rgba(255,255,255,0.7); font-size: 12px; cursor: pointer; text-align: center; transition: all 0.2s; }
+.file-btn:hover { border-color: var(--pink); color: var(--pink-light); }
+input[type=file] { display: none; }
+input[type=date].love-date { width: 100%; padding: 9px 14px; background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; font-size: 13px; font-family: 'Be Vietnam Pro', sans-serif; }
 input[type=date].love-date::-webkit-calendar-picker-indicator { filter: invert(1); }
+
+/* === SETTINGS FAB === */
+.settings-fab {
+  position: fixed; bottom: 22px; left: 22px; z-index: 200;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(20,8,14,0.85);
+  border: 0.5px solid rgba(255,255,255,0.18);
+  color: white; font-size: 22px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  transition: all 0.25s;
+  backdrop-filter: blur(12px);
+}
+.settings-fab:hover { background: rgba(232,73,106,0.3); border-color: var(--pink); transform: scale(1.08); }
+.settings-fab.open { background: rgba(232,73,106,0.25); border-color: var(--pink); transform: rotate(90deg); }
+
+/* === SETTINGS PANEL (popup above FAB) === */
+.settings-panel {
+  position: fixed; bottom: 86px; left: 16px; z-index: 199;
+  width: min(340px, calc(100vw - 32px));
+  padding: 20px; display: grid; gap: 14px;
+  transform-origin: bottom left;
+  transform: scale(0.85) translateY(20px);
+  opacity: 0; pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+.settings-panel::-webkit-scrollbar { width: 3px; }
+.settings-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+.settings-panel.open {
+  transform: scale(1) translateY(0);
+  opacity: 1; pointer-events: all;
+}
+.settings-panel-title {
+  font-size: 12px; color: var(--gold); letter-spacing: 0.15em;
+  text-transform: uppercase; text-align: center;
+  padding-bottom: 12px; border-bottom: 0.5px solid rgba(255,255,255,0.1);
+}
+.settings-save-btn {
+  width: 100%; padding: 11px;
+  background: linear-gradient(135deg, var(--pink), var(--rose));
+  border: none; border-radius: 10px; color: white;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  font-family: 'Be Vietnam Pro', sans-serif; transition: opacity 0.2s;
+}
+.settings-save-btn:hover { opacity: 0.85; }
 
 /* === HEART GALLERY === */
 .gallery-section { padding: 10px 20px 50px; }
-.section-head {
-  text-align: center; margin-bottom: 24px;
-}
-.section-head h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(1.4rem, 5vw, 2rem); font-weight: 400;
-}
+.section-head { text-align: center; margin-bottom: 24px; }
+.section-head h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.4rem, 5vw, 2rem); font-weight: 400; }
+.section-head p { font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 6px; }
 .gallery-wrap {
-  width: min(90vw, 560px);
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(9, 1fr);
+  width: min(90vw, 560px); margin: 0 auto;
+  display: grid; grid-template-columns: repeat(9, 1fr);
   gap: clamp(3px, 1.2vw, 8px);
 }
 .cell {
@@ -241,76 +203,101 @@ input[type=date].love-date::-webkit-calendar-picker-indicator { filter: invert(1
 .cell.empty { visibility: hidden; }
 .cell img {
   width: 100%; height: 100%; object-fit: cover;
-  position: absolute; inset: 0;
-  transition: opacity 0.8s ease;
+  position: absolute; inset: 0; transition: transform 0.3s ease;
 }
-.cell .placeholder {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  font-size: clamp(6px, 1.5vw, 11px); color: rgba(255,255,255,0.3); text-align: center;
+.cell.has-photo { cursor: pointer; }
+.cell.has-photo:hover img { transform: scale(1.08); }
+.cell.has-photo::after {
+  content: '🔍'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(8px, 2vw, 14px);
+  background: rgba(0,0,0,0); opacity: 0; transition: all 0.25s;
+}
+.cell.has-photo:hover::after { opacity: 1; background: rgba(0,0,0,0.3); }
+.cell-heart { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.cell-heart svg { width: 55%; height: 55%; }
+
+/* === LIGHTBOX === */
+.lightbox {
+  display: none; position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.93); backdrop-filter: blur(10px);
+  align-items: center; justify-content: center; flex-direction: column;
+}
+.lightbox.open { display: flex; }
+.lb-img-wrap {
+  position: relative; max-width: min(92vw, 900px); max-height: 85vh;
+  display: flex; align-items: center; justify-content: center;
+}
+.lb-img-wrap img {
+  max-width: min(92vw, 900px); max-height: 82vh;
+  object-fit: contain; border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+  display: block; user-select: none;
+}
+.lb-close {
+  position: fixed; top: 18px; right: 20px;
+  background: rgba(255,255,255,0.12); border: 0.5px solid rgba(255,255,255,0.2);
+  color: white; border-radius: 50%; width: 40px; height: 40px;
+  font-size: 18px; cursor: pointer; z-index: 501;
+  display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+}
+.lb-close:hover { background: rgba(232,73,106,0.4); }
+.lb-nav {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,0.10); border: 0.5px solid rgba(255,255,255,0.18);
+  color: white; border-radius: 50%; width: 48px; height: 48px;
+  font-size: 22px; cursor: pointer; z-index: 501;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; user-select: none;
+}
+.lb-nav:hover { background: rgba(232,73,106,0.4); }
+#lbPrev { left: 14px; }
+#lbNext { right: 14px; }
+@media (max-width: 480px) {
+  #lbPrev { left: 6px; width: 40px; height: 40px; font-size: 18px; }
+  #lbNext { right: 6px; width: 40px; height: 40px; font-size: 18px; }
+}
+.lb-counter {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: rgba(255,255,255,0.1); border: 0.5px solid rgba(255,255,255,0.15);
+  border-radius: 20px; padding: 5px 16px; font-size: 12px; color: rgba(255,255,255,0.6);
+  letter-spacing: 0.1em;
 }
 
+/* === TOAST === */
+.toast {
+  position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%) translateY(12px);
+  background: rgba(30,10,18,0.92); backdrop-filter: blur(10px);
+  border: 0.5px solid rgba(232,73,106,0.4);
+  color: white; padding: 10px 22px; border-radius: 22px;
+  font-size: 13px; z-index: 300; opacity: 0;
+  transition: all 0.32s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
 /* === TIMELINE === */
-.timeline-section {
-  max-width: 600px; margin: 0 auto; padding: 20px 20px 50px;
-}
-.timeline-section h2 {
-  font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 400;
-  text-align: center; margin-bottom: 30px;
-}
+.timeline-section { max-width: 600px; margin: 0 auto; padding: 20px 20px 50px; }
+.timeline-section h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 400; text-align: center; margin-bottom: 30px; }
 .timeline { position: relative; padding-left: 30px; }
-.timeline::before {
-  content: ''; position: absolute; left: 7px; top: 0; bottom: 0;
-  width: 1px; background: linear-gradient(180deg, var(--pink), transparent);
-}
+.timeline::before { content: ''; position: absolute; left: 7px; top: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, var(--pink), transparent); }
 .t-item { position: relative; margin-bottom: 28px; }
-.t-dot {
-  position: absolute; left: -26px; top: 4px;
-  width: 12px; height: 12px; border-radius: 50%;
-  background: var(--pink); border: 2px solid #1a0a0f;
-}
+.t-dot { position: absolute; left: -26px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--pink); border: 2px solid #1a0a0f; }
 .t-date { font-size: 11px; color: var(--gold); letter-spacing: 0.1em; margin-bottom: 4px; }
-.t-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 15px; margin-bottom: 4px; font-weight: 400;
-}
+.t-title { font-family: 'Playfair Display', serif; font-size: 15px; margin-bottom: 4px; font-weight: 400; }
 .t-desc { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5; }
 
 /* === WISHES === */
-.wishes-section {
-  max-width: 560px; margin: 0 auto; padding: 20px 20px 50px;
-}
-.wishes-section h2 {
-  font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 400;
-  text-align: center; margin-bottom: 24px;
-}
+.wishes-section { max-width: 560px; margin: 0 auto; padding: 20px 20px 100px; }
+.wishes-section h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 400; text-align: center; margin-bottom: 24px; }
 .wish-form { padding: 20px; margin-bottom: 24px; }
-.wish-form input, .wish-form textarea {
-  width: 100%; background: rgba(255,255,255,0.07);
-  border: 0.5px solid rgba(255,255,255,0.18);
-  border-radius: 10px; color: white;
-  padding: 10px 14px; font-size: 14px;
-  font-family: 'Be Vietnam Pro', sans-serif;
-  margin-bottom: 10px; resize: none;
-}
+.wish-form input, .wish-form textarea { width: 100%; background: rgba(255,255,255,0.07); border: 0.5px solid rgba(255,255,255,0.18); border-radius: 10px; color: white; padding: 10px 14px; font-size: 14px; font-family: 'Be Vietnam Pro', sans-serif; margin-bottom: 10px; resize: none; }
 .wish-form input::placeholder, .wish-form textarea::placeholder { color: rgba(255,255,255,0.3); }
-.wish-submit {
-  width: 100%; padding: 11px;
-  background: linear-gradient(135deg, var(--pink), var(--rose));
-  border: none; border-radius: 10px;
-  color: white; font-size: 14px; font-weight: 500;
-  cursor: pointer; font-family: 'Be Vietnam Pro', sans-serif;
-  transition: opacity 0.2s;
-}
+.wish-submit { width: 100%; padding: 11px; background: linear-gradient(135deg, var(--pink), var(--rose)); border: none; border-radius: 10px; color: white; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Be Vietnam Pro', sans-serif; transition: opacity 0.2s; }
 .wish-submit:hover { opacity: 0.85; }
 .wish-list { display: grid; gap: 12px; }
-.wish-card {
-  padding: 16px; border-left: 2px solid var(--pink);
-  background: rgba(232,73,106,0.06);
-  border-radius: 0 12px 12px 0;
-}
-.wish-author {
-  font-size: 13px; font-weight: 500; color: var(--pink-light); margin-bottom: 6px;
-}
+.wish-card { padding: 16px; border-left: 2px solid var(--pink); background: rgba(232,73,106,0.06); border-radius: 0 12px 12px 0; position: relative; }
+.wish-author { font-size: 13px; font-weight: 500; color: var(--pink-light); margin-bottom: 6px; }
 .wish-author span { font-size: 10px; color: rgba(255,255,255,0.3); margin-left: 8px; }
 .wish-text { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.6; }
 .wish-delete { float: right; background: none; border: none; color: rgba(255,255,255,0.25); cursor: pointer; font-size: 14px; }
@@ -319,17 +306,16 @@ input[type=date].love-date::-webkit-calendar-picker-indicator { filter: invert(1
 /* === LYRIC SIDEBAR (desktop) === */
 @media (min-width: 769px) {
   .lyric-sidebar {
-    position: fixed; left: 0; top: 0; bottom: 0;
-    width: 240px; z-index: 10;
-    background: rgba(20,5,10,0.7);
-    backdrop-filter: blur(20px);
+    position: fixed; left: 0; top: 0; bottom: 0; width: 240px; z-index: 10;
+    background: rgba(20,5,10,0.7); backdrop-filter: blur(20px);
     border-right: 0.5px solid rgba(255,255,255,0.08);
     overflow-y: auto; padding: 20px 16px;
     display: flex; flex-direction: column;
   }
   .lyric-sidebar::-webkit-scrollbar { width: 3px; }
   .lyric-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
-  .lyric-top { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+  .lyric-top { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .lyric-song-name { font-family: 'Playfair Display', serif; font-size: 13px; color: var(--pink-light); margin-bottom: 12px; font-style: italic; min-height: 18px; }
   .lyric-content { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.9; white-space: pre-wrap; }
   .main-content { padding-left: 240px; }
 }
@@ -339,40 +325,16 @@ input[type=date].love-date::-webkit-calendar-picker-indicator { filter: invert(1
 }
 
 /* === LYRIC TOGGLE (mobile) === */
-.lyric-toggle {
-  display: none;
-  position: fixed; bottom: 20px; right: 20px;
-  width: 48px; height: 48px; border-radius: 50%;
-  background: var(--pink); border: none; color: white;
-  font-size: 18px; cursor: pointer; z-index: 100;
-  box-shadow: 0 4px 20px rgba(232,73,106,0.5);
-}
-.lyric-drawer {
-  display: none;
-  position: fixed; inset: 0; z-index: 99;
-  background: rgba(20,5,10,0.95);
-  backdrop-filter: blur(20px);
-  padding: 60px 24px 24px;
-  overflow-y: auto;
-}
+.lyric-toggle { display: none; position: fixed; bottom: 22px; right: 22px; width: 48px; height: 48px; border-radius: 50%; background: var(--pink); border: none; color: white; font-size: 18px; cursor: pointer; z-index: 100; box-shadow: 0 4px 20px rgba(232,73,106,0.5); }
+.lyric-drawer { display: none; position: fixed; inset: 0; z-index: 99; background: rgba(20,5,10,0.95); backdrop-filter: blur(20px); padding: 60px 24px 24px; overflow-y: auto; }
 .lyric-drawer.open { display: block; }
-.lyric-close {
-  position: absolute; top: 16px; right: 16px;
-  background: none; border: none; color: white; font-size: 22px; cursor: pointer;
-}
-.lyric-drawer-text {
-  font-size: 16px; color: rgba(255,255,255,0.6); line-height: 2; white-space: pre-wrap;
-}
-@media (max-width: 768px) {
-  .lyric-toggle { display: flex; align-items: center; justify-content: center; }
-}
+.lyric-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
+.lyric-drawer-title { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--pink-light); margin-bottom: 12px; font-style: italic; }
+.lyric-drawer-text { font-size: 16px; color: rgba(255,255,255,0.6); line-height: 2; white-space: pre-wrap; }
+@media (max-width: 768px) { .lyric-toggle { display: flex; align-items: center; justify-content: center; } }
 
 /* === FOOTER === */
-footer {
-  text-align: center; padding: 30px 20px;
-  font-size: 12px; color: rgba(255,255,255,0.2);
-  font-family: 'Playfair Display', serif; font-style: italic;
-}
+footer { text-align: center; padding: 30px 20px; font-size: 12px; color: rgba(255,255,255,0.2); font-family: 'Playfair Display', serif; font-style: italic; }
 </style>
 </head>
 <body>
@@ -380,22 +342,83 @@ footer {
 <!-- BG -->
 <div id="bgWrap">
   <div id="bgImg"></div>
+  <div id="bgImg2"></div>
   <div class="mesh"></div>
 </div>
 
-<!-- PETALS (JS will create) -->
+<!-- BG DOTS INDICATOR -->
+<div class="bg-dots" id="bgDots"></div>
 
 <!-- LYRIC SIDEBAR (desktop) -->
 <aside class="lyric-sidebar" id="lyricSidebar">
   <div class="lyric-top">🎵 Lời bài hát</div>
-  <div class="lyric-content" id="lyricContent">Tải file lyric (.txt) để xem lời bài hát ở đây...</div>
+  <div class="lyric-song-name" id="lyricSongName"></div>
+  <div class="lyric-content" id="lyricContent">Nhập tên bài hát để tự động tìm lyric hoặc tải file .txt ở phần cài đặt...</div>
 </aside>
 
 <!-- LYRIC TOGGLE + DRAWER (mobile) -->
 <button class="lyric-toggle" id="lyricToggle">🎵</button>
 <div class="lyric-drawer" id="lyricDrawer">
   <button class="lyric-close" id="lyricClose">✕</button>
-  <div class="lyric-drawer-text" id="lyricDrawerText">Tải file lyric (.txt) để xem lời bài hát...</div>
+  <div class="lyric-drawer-title" id="lyricDrawerTitle"></div>
+  <div class="lyric-drawer-text" id="lyricDrawerText">Nhập tên bài hát để tự động tìm lyric...</div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose">✕</button>
+  <button class="lb-nav" id="lbPrev">&#8249;</button>
+  <div class="lb-img-wrap">
+    <img id="lbImg" src="" alt="">
+  </div>
+  <button class="lb-nav" id="lbNext">&#8250;</button>
+  <div class="lb-counter" id="lbCounter"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- SETTINGS FAB (bottom-left) -->
+<button class="settings-fab" id="settingsFab" onclick="toggleSettingsPanel()">⚙️</button>
+
+<!-- SETTINGS PANEL -->
+<div class="settings-panel glass" id="settingsPanel">
+  <div class="settings-panel-title">⚙️ Cài đặt</div>
+
+  <div class="up-item">
+    <label>📅 Ngày yêu nhau</label>
+    <input type="date" class="love-date" id="loveDateInput" onchange="updateLoveDays()">
+  </div>
+
+  <div class="up-item">
+    <label>🖼️ Hình nền (thư mục: background/)</label>
+    <div class="folder-hint">Chọn nhiều ảnh → tự động chuyển 15 giây/lần</div>
+    <label class="file-btn" for="bgFile">📁 Chọn ảnh từ thư mục background/</label>
+    <input type="file" id="bgFile" multiple accept="image/*" onchange="changeBg(event)">
+    <div id="bgStatus" style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:4px;text-align:center;"></div>
+  </div>
+
+  <div class="up-item">
+    <label>🎵 Nhạc (thư mục: baihat/)</label>
+    <div class="folder-hint">Chọn thư mục baihat/ để tải toàn bộ nhạc</div>
+    <label class="file-btn" for="musicFile">📁 Chọn thư mục baihat/</label>
+    <input type="file" id="musicFile" webkitdirectory multiple accept="audio/*" onchange="uploadMusic(event)">
+  </div>
+
+  <div class="up-item">
+    <label>🎤 Lyric (.txt) — hoặc tự tìm bằng tên bài hát ở trên</label>
+    <label class="file-btn" for="lyricFile">📁 Chọn file lyric</label>
+    <input type="file" id="lyricFile" accept=".txt" onchange="uploadLyric(event)">
+  </div>
+
+  <div class="up-item">
+    <label>📸 Ảnh kỷ niệm (thư mục: Kyniem/)</label>
+    <div class="folder-hint">Chọn thư mục Kyniem/ để tải toàn bộ ảnh</div>
+    <label class="file-btn" for="photoFile">📁 Chọn thư mục Kyniem/</label>
+    <input type="file" id="photoFile" webkitdirectory multiple accept="image/*" onchange="addImages(event)">
+  </div>
+
+  <button class="settings-save-btn" onclick="saveAll()">💾 Lưu tất cả cài đặt</button>
 </div>
 
 <!-- MAIN -->
@@ -444,41 +467,18 @@ footer {
       <input type="range" id="volSlider" min="0" max="1" step="0.01" value="0.8" oninput="setVol(this.value)">
       <span>🔊</span>
     </div>
-  </div>
-
-  <!-- UPLOADS -->
-  <div class="uploads glass">
-    <div class="up-item">
-      <label>📅 Ngày yêu nhau</label>
-      <input type="date" class="love-date" id="loveDateInput" onchange="updateLoveDays()">
+    <div class="lyric-search-row">
+      <input type="text" class="lyric-search-input" id="lyricSearchInput" placeholder="Tên bài hát để tìm lyric...">
+      <button class="lyric-search-btn" id="lyricSearchBtn" onclick="searchLyrics()">🔍 Tìm</button>
     </div>
-    <div class="up-item">
-      <label>🖼️ Hình nền</label>
-      <label class="file-btn" for="bgFile">📁 Chọn ảnh nền</label>
-      <input type="file" id="bgFile" accept="image/*" onchange="changeBg(event)">
-    </div>
-    <div class="up-item">
-      <label>🎵 Nhạc (có thể chọn nhiều)</label>
-      <label class="file-btn" for="musicFile">📁 Chọn file nhạc</label>
-      <input type="file" id="musicFile" multiple accept="audio/*" onchange="uploadMusic(event)">
-    </div>
-    <div class="up-item">
-      <label>🎤 Lyric (.txt)</label>
-      <label class="file-btn" for="lyricFile">📁 Chọn file lyric</label>
-      <input type="file" id="lyricFile" accept=".txt" onchange="uploadLyric(event)">
-    </div>
-    <div class="up-item">
-      <label>📸 Ảnh kỷ niệm (hình trái tim)</label>
-      <label class="file-btn" for="photoFile">📁 Chọn ảnh (nhiều ảnh)</label>
-      <input type="file" id="photoFile" multiple accept="image/*" onchange="addImages(event)">
-    </div>
+    <div class="lyric-status" id="lyricStatus">Nhập tên bài hát và nhấn Tìm để tự động gắn lyric</div>
   </div>
 
   <!-- HEART GALLERY -->
   <div class="gallery-section">
     <div class="section-head">
       <h2>💖 Kỷ niệm của chúng mình</h2>
-      <p style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:6px;">Ảnh sẽ tự chuyển slide</p>
+      <p id="galleryHint">Nhấp vào ảnh để phóng to • Ô trống hiển thị hình trái tim ♥</p>
     </div>
     <div class="gallery-wrap" id="gallery"></div>
   </div>
@@ -545,21 +545,128 @@ for(let i=0;i<22;i++){
   document.body.appendChild(p);
 }
 
+// ===== TOAST =====
+function showToast(msg, duration=2600) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ===== SETTINGS PANEL TOGGLE (bottom-left FAB) =====
+let settingsPanelOpen = false;
+function toggleSettingsPanel() {
+  settingsPanelOpen = !settingsPanelOpen;
+  const fab = document.getElementById('settingsFab');
+  const panel = document.getElementById('settingsPanel');
+  if (settingsPanelOpen) {
+    fab.classList.add('open');
+    panel.classList.add('open');
+  } else {
+    fab.classList.remove('open');
+    panel.classList.remove('open');
+  }
+}
+// Close settings panel when clicking outside
+document.addEventListener('click', function(e) {
+  if (!settingsPanelOpen) return;
+  const fab = document.getElementById('settingsFab');
+  const panel = document.getElementById('settingsPanel');
+  if (!fab.contains(e.target) && !panel.contains(e.target)) {
+    fab.classList.remove('open');
+    panel.classList.remove('open');
+    settingsPanelOpen = false;
+  }
+});
+
+// ===== SAVE ALL =====
+function saveAll() {
+  try {
+    localStorage.setItem('weddingDate', document.getElementById('weddingDateInput').value || '');
+    localStorage.setItem('loveDate', document.getElementById('loveDateInput').value || '');
+    const lyric = document.getElementById('lyricContent').textContent;
+    localStorage.setItem('lyricText', lyric);
+    localStorage.setItem('lyricSongName', document.getElementById('lyricSongName').textContent || '');
+
+    if (photos.length > 0) {
+      const raw = JSON.stringify(photos);
+      if (raw.length < 4.5 * 1024 * 1024) {
+        localStorage.setItem('savedPhotos', raw);
+      } else {
+        localStorage.removeItem('savedPhotos');
+        showToast('⚠️ Ảnh quá nhiều/lớn — đã lưu cài đặt khác, riêng ảnh cần chọn lại mỗi lần.', 3500);
+        return;
+      }
+    }
+
+    // Save first BG only (for restore)
+    if (bgImages.length > 0) {
+      if (bgImages[0].startsWith('data:') && bgImages[0].length < 800 * 1024) {
+        localStorage.setItem('savedBg', bgImages[0]);
+      }
+    }
+
+    showToast('💾 Đã lưu tất cả cài đặt!');
+  } catch(e) {
+    showToast('⚠️ Lỗi khi lưu: ' + e.message);
+  }
+}
+
+// ===== RESTORE ON LOAD =====
+function restoreAll() {
+  const wDate = localStorage.getItem('weddingDate');
+  if (wDate) { document.getElementById('weddingDateInput').value = wDate; }
+
+  const lDate = localStorage.getItem('loveDate');
+  if (lDate) { document.getElementById('loveDateInput').value = lDate; updateLoveDays(); }
+
+  const lyric = localStorage.getItem('lyricText');
+  const songName = localStorage.getItem('lyricSongName') || '';
+  if (lyric && lyric.length > 5) {
+    document.getElementById('lyricContent').textContent = lyric;
+    document.getElementById('lyricDrawerText').textContent = lyric;
+    document.getElementById('lyricSongName').textContent = songName;
+    document.getElementById('lyricDrawerTitle').textContent = songName;
+  }
+
+  const savedPhotos = localStorage.getItem('savedPhotos');
+  if (savedPhotos) {
+    try {
+      photos = JSON.parse(savedPhotos);
+      renderGallery();
+    } catch(e) {}
+  }
+
+  const savedBg = localStorage.getItem('savedBg');
+  if (savedBg) {
+    bgImages = [savedBg];
+    startBgSlideshow();
+  }
+
+  updateCountdown();
+}
+
 // ===== MUSIC =====
 const music = document.getElementById('music');
-let playlist=[], currentTrack=0;
-let isPlaying=false;
+let playlist=[], currentTrack=0, isPlaying=false;
 
 function uploadMusic(e){
-  playlist=[...e.target.files];
-  currentTrack=0;
+  // Filter only audio files (webkitdirectory may include non-audio)
+  playlist = [...e.target.files].filter(f => f.type.startsWith('audio/') || /\.(mp3|wav|ogg|flac|m4a|aac)$/i.test(f.name));
+  if (!playlist.length) { showToast('⚠️ Không tìm thấy file nhạc trong thư mục!'); return; }
+  playlist.sort((a,b) => a.name.localeCompare(b.name));
+  currentTrack = 0;
   loadTrack(0);
+  showToast(`🎵 Đã tải ${playlist.length} bài từ thư mục baihat/`);
 }
 function loadTrack(i){
   if(!playlist.length) return;
   music.src=URL.createObjectURL(playlist[i]);
-  document.getElementById('musicNow').textContent = playlist[i].name.replace(/\.[^.]+$/,'');
+  const name = cleanSongName(playlist[i].name);
+  document.getElementById('musicNow').textContent = name;
+  document.getElementById('lyricSearchInput').value = name;
   music.play().then(()=>{isPlaying=true;document.getElementById('playBtn').textContent='⏸';}).catch(()=>{});
+  autoSearchLyrics(name);
 }
 function togglePlay(){
   if(!playlist.length) return;
@@ -569,7 +676,6 @@ function togglePlay(){
 function prev(){ if(!playlist.length) return; currentTrack=(currentTrack-1+playlist.length)%playlist.length; loadTrack(currentTrack); }
 function nextTrack(){ if(!playlist.length) return; currentTrack=(currentTrack+1)%playlist.length; loadTrack(currentTrack); }
 function setVol(v){ music.volume=v; }
-
 music.ontimeupdate=()=>{
   if(!music.duration) return;
   const pct=(music.currentTime/music.duration)*100;
@@ -586,16 +692,138 @@ document.getElementById('progressBar').onclick=function(e){
 function fmtTime(s){ if(isNaN(s)) return '0:00'; const m=Math.floor(s/60),sec=Math.floor(s%60); return m+':'+(sec<10?'0':'')+sec; }
 music.volume=0.8;
 
-// ===== BG =====
-function changeBg(e){ document.getElementById('bgImg').style.backgroundImage=`url(${URL.createObjectURL(e.target.files[0])})`; }
+// ===== LYRIC SEARCH =====
+function cleanSongName(filename) {
+  return filename
+    .replace(/\.[^.]+$/, '')
+    .replace(/^\d+[\.\-\s]+/, '')
+    .replace(/[\[\(].*?[\]\)]/g, '')
+    .replace(/_/g, ' ')
+    .trim();
+}
+function setLyricsUI(text, songTitle) {
+  document.getElementById('lyricContent').textContent = text;
+  document.getElementById('lyricDrawerText').textContent = text;
+  document.getElementById('lyricSongName').textContent = songTitle || '';
+  document.getElementById('lyricDrawerTitle').textContent = songTitle || '';
+}
+async function autoSearchLyrics(songName) {
+  if (!songName) return;
+  document.getElementById('lyricStatus').textContent = '🔍 Đang tự động tìm lyric...';
+  await doLyricSearch(songName);
+}
+async function searchLyrics() {
+  const q = document.getElementById('lyricSearchInput').value.trim();
+  if (!q) { showToast('Vui lòng nhập tên bài hát!'); return; }
+  document.getElementById('lyricStatus').textContent = '🔍 Đang tìm lyric...';
+  await doLyricSearch(q);
+}
+async function doLyricSearch(query) {
+  try {
+    const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      document.getElementById('lyricStatus').textContent = '❌ Không tìm thấy lyric cho: "' + query + '"';
+      return;
+    }
+    const track = data.find(t => t.plainLyrics) || data[0];
+    const lyrics = track.plainLyrics || track.syncedLyrics || '';
+    if (!lyrics) {
+      document.getElementById('lyricStatus').textContent = '❌ Bài hát tìm thấy nhưng không có lời';
+      return;
+    }
+    const songTitle = (track.trackName || '') + (track.artistName ? ' — ' + track.artistName : '');
+    setLyricsUI(lyrics, songTitle);
+    document.getElementById('lyricStatus').textContent = `✅ Đã gắn lyric: ${songTitle}`;
+  } catch(e) {
+    document.getElementById('lyricStatus').textContent = '⚠️ Không thể kết nối để tìm lyric';
+  }
+}
 
-// ===== LYRIC =====
+// ===== BG SLIDESHOW =====
+let bgImages = [];        // array of data URLs or object URLs
+let bgCurrentIdx = 0;
+let bgActiveLayer = 1;    // which layer is currently visible (1 = #bgImg, 2 = #bgImg2)
+let bgSlideshowTimer = null;
+
+function renderBgDots() {
+  const container = document.getElementById('bgDots');
+  container.innerHTML = '';
+  if (bgImages.length <= 1) return;
+  bgImages.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'bg-dot' + (i === bgCurrentIdx ? ' active' : '');
+    container.appendChild(dot);
+  });
+}
+
+function showBgAt(idx) {
+  if (!bgImages.length) return;
+  bgCurrentIdx = (idx + bgImages.length) % bgImages.length;
+  const img1 = document.getElementById('bgImg');
+  const img2 = document.getElementById('bgImg2');
+
+  if (bgActiveLayer === 1) {
+    // Load new image into layer 2, fade it in, fade out layer 1
+    img2.style.backgroundImage = `url(${bgImages[bgCurrentIdx]})`;
+    img2.classList.add('visible');
+    setTimeout(() => {
+      img1.classList.remove('visible');
+      bgActiveLayer = 2;
+    }, 100);
+  } else {
+    // Load new image into layer 1, fade it in, fade out layer 2
+    img1.style.backgroundImage = `url(${bgImages[bgCurrentIdx]})`;
+    img1.classList.add('visible');
+    setTimeout(() => {
+      img2.classList.remove('visible');
+      bgActiveLayer = 1;
+    }, 100);
+  }
+
+  renderBgDots();
+}
+
+function startBgSlideshow() {
+  if (bgSlideshowTimer) clearInterval(bgSlideshowTimer);
+  showBgAt(0);
+  if (bgImages.length > 1) {
+    bgSlideshowTimer = setInterval(() => {
+      showBgAt(bgCurrentIdx + 1);
+    }, 15000); // 15 giây mỗi slide
+  }
+}
+
+function changeBg(e) {
+  const files = [...e.target.files].filter(f => f.type.startsWith('image/'));
+  if (!files.length) return;
+
+  // Sort by filename
+  files.sort((a, b) => a.name.localeCompare(b.name));
+
+  bgImages = [];
+  let loaded = 0;
+  files.forEach(f => {
+    const url = URL.createObjectURL(f);
+    bgImages.push(url);
+    loaded++;
+    if (loaded === files.length) {
+      startBgSlideshow();
+      const status = document.getElementById('bgStatus');
+      if (status) status.textContent = `✅ ${files.length} ảnh • tự chuyển 15s/lần`;
+      showToast(`🖼️ Đã tải ${files.length} ảnh nền`);
+    }
+  });
+}
+
+// ===== LYRIC TXT UPLOAD =====
 function uploadLyric(e){
   const reader=new FileReader();
   reader.onload=ev=>{
     const txt=ev.target.result;
-    document.getElementById('lyricContent').textContent=txt;
-    document.getElementById('lyricDrawerText').textContent=txt;
+    setLyricsUI(txt, '');
+    document.getElementById('lyricStatus').textContent = '✅ Đã tải lyric từ file';
   };
   reader.readAsText(e.target.files[0]);
 }
@@ -605,35 +833,28 @@ document.getElementById('lyricClose').onclick=()=>document.getElementById('lyric
 // ===== LOVE DAYS =====
 function updateLoveDays(){
   const d=document.getElementById('loveDateInput').value;
-  if(!d) return;
+  if(!d){ document.getElementById('daysTogether').innerHTML=''; return; }
   const days=Math.floor((new Date()-new Date(d))/86400000);
   document.getElementById('daysTogether').innerHTML=`💑 Đã bên nhau <strong>${days.toLocaleString()}</strong> ngày`;
   localStorage.setItem('loveDate',d);
 }
-const savedLove=localStorage.getItem('loveDate');
-if(savedLove){ document.getElementById('loveDateInput').value=savedLove; updateLoveDays(); }
 
 // ===== COUNTDOWN =====
 function updateCountdown(){
   const d=document.getElementById('weddingDateInput').value;
   if(!d){ ['cdDays','cdHours','cdMins','cdSecs'].forEach(id=>document.getElementById(id).textContent='--'); return; }
-  const target=new Date(d+'T00:00:00');
-  const now=new Date();
-  const diff=target-now;
-  if(diff<=0){ ['cdDays','cdHours','cdMins','cdSecs'].forEach((id,i)=>document.getElementById(id).textContent=['Hôm','nay','là','ngày cưới!'][i]); return; }
+  const target=new Date(d+'T00:00:00'), now=new Date(), diff=target-now;
+  if(diff<=0){ ['cdDays','cdHours','cdMins','cdSecs'].forEach((id,i)=>document.getElementById(id).textContent=['🎊','Hôm','nay','🎊'][i]); return; }
   document.getElementById('cdDays').textContent=Math.floor(diff/86400000);
   document.getElementById('cdHours').textContent=Math.floor((diff%86400000)/3600000);
   document.getElementById('cdMins').textContent=Math.floor((diff%3600000)/60000);
   document.getElementById('cdSecs').textContent=Math.floor((diff%60000)/1000);
 }
 document.getElementById('weddingDateInput').onchange=function(){ localStorage.setItem('weddingDate',this.value); updateCountdown(); };
-const savedWedding=localStorage.getItem('weddingDate');
-if(savedWedding){ document.getElementById('weddingDateInput').value=savedWedding; }
-setInterval(updateCountdown,1000);
-updateCountdown();
+setInterval(updateCountdown, 1000);
 
-// ===== HEART GALLERY + SLIDESHOW =====
-const heartPattern=[
+// ===== HEART GALLERY =====
+const heartPattern = [
   0,0,1,1,0,1,1,0,0,
   0,1,1,1,1,1,1,1,0,
   1,1,1,1,1,1,1,1,1,
@@ -642,96 +863,129 @@ const heartPattern=[
   0,0,1,1,1,1,1,0,0,
   0,0,0,1,1,1,0,0,0
 ];
-let photos=[];
-let slideshowTimers=[];
+let photos = [];
 
-function addImages(e){
-  const files=[...e.target.files];
-  let loaded=0;
-  files.forEach(f=>{
-    const r=new FileReader();
-    r.onload=ev=>{ photos.push(ev.target.result); loaded++; if(loaded===files.length) renderGallery(); };
-    r.readAsDataURL(f);
-  });
+function heartSVG() {
+  return `<svg viewBox="0 0 100 88" xmlns="http://www.w3.org/2000/svg" style="width:58%;height:58%">
+    <path d="M50,80 C50,80 6,50 6,28 C6,14 17,7 29,13 C36,17 43,23 50,31 C57,23 64,17 71,13 C83,7 94,14 94,28 C94,50 50,80 50,80Z"
+      fill="rgba(232,73,106,0.22)" stroke="rgba(232,73,106,0.45)" stroke-width="2" stroke-linejoin="round"/>
+  </svg>`;
 }
 
-function renderGallery(){
-  const gallery=document.getElementById('gallery');
-  gallery.innerHTML='';
-  slideshowTimers.forEach(t=>clearInterval(t));
-  slideshowTimers=[];
-
-  let photoIdx=0;
-  const cellsWithPhotos=[];
-
-  heartPattern.forEach((v,i)=>{
-    const cell=document.createElement('div');
-    cell.className='cell'+(v?'':' empty');
-    if(v){
-      if(photos.length>0){
-        const startIdx=photoIdx%photos.length;
+function renderGallery() {
+  const gallery = document.getElementById('gallery');
+  gallery.innerHTML = '';
+  let photoIdx = 0;
+  heartPattern.forEach((v) => {
+    const cell = document.createElement('div');
+    cell.className = 'cell' + (v ? '' : ' empty');
+    if (v) {
+      if (photoIdx < photos.length) {
+        const img = document.createElement('img');
+        img.src = photos[photoIdx];
+        img.alt = 'Kỷ niệm';
+        img.loading = 'lazy';
+        const capturedIdx = photoIdx;
+        cell.classList.add('has-photo');
+        cell.addEventListener('click', () => openLightbox(capturedIdx));
+        cell.appendChild(img);
         photoIdx++;
-        // create img layers for crossfade
-        const imgs=[];
-        for(let k=0;k<photos.length;k++){
-          const img=document.createElement('img');
-          img.src=photos[k];
-          img.style.opacity=(k===0?'1':'0');
-          cell.appendChild(img);
-          imgs.push(img);
-        }
-        cellsWithPhotos.push({cell, imgs, cur:0, start:startIdx});
       } else {
-        const ph=document.createElement('div');
-        ph.className='placeholder';
-        ph.textContent='💖';
-        cell.appendChild(ph);
+        const wrap = document.createElement('div');
+        wrap.className = 'cell-heart';
+        wrap.innerHTML = heartSVG();
+        cell.appendChild(wrap);
       }
     }
     gallery.appendChild(cell);
   });
-
-  // staggered slideshow
-  if(photos.length>1){
-    cellsWithPhotos.forEach((c,i)=>{
-      const delay=i*200;
-      setTimeout(()=>{
-        const t=setInterval(()=>{
-          const next=(c.cur+1)%photos.length;
-          c.imgs[c.cur].style.opacity='0';
-          c.imgs[next].style.opacity='1';
-          c.cur=next;
-        }, 3000+Math.random()*2000);
-        slideshowTimers.push(t);
-      }, delay);
-    });
-  }
+  const total = photos.length;
+  const hint = document.getElementById('galleryHint');
+  if (total > 0) hint.textContent = `${total} ảnh đã chọn • Nhấp để phóng to & điều hướng ♥`;
+  else hint.textContent = 'Nhấp vào ảnh để phóng to • Ô trống hiển thị hình trái tim ♥';
 }
 
-renderGallery();
+function addImages(e) {
+  const files = [...e.target.files].filter(f => f.type.startsWith('image/'));
+  if (!files.length) { showToast('⚠️ Không tìm thấy ảnh trong thư mục!'); return; }
+  files.sort((a, b) => a.name.localeCompare(b.name));
+  photos = [];
+  let loaded = 0;
+  files.forEach(f => {
+    const r = new FileReader();
+    r.onload = ev => {
+      photos.push(ev.target.result);
+      loaded++;
+      if (loaded === files.length) {
+        renderGallery();
+        showToast(`📸 Đã tải ${files.length} ảnh từ thư mục Kyniem/`);
+      }
+    };
+    r.readAsDataURL(f);
+  });
+}
+
+// ===== LIGHTBOX =====
+let lbCurrentIdx = 0;
+function openLightbox(idx) {
+  if (!photos.length) return;
+  lbCurrentIdx = idx;
+  document.getElementById('lbImg').src = photos[idx];
+  document.getElementById('lbCounter').textContent = (idx + 1) + ' / ' + photos.length;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function lbNav(dir) {
+  if (!photos.length) return;
+  lbCurrentIdx = (lbCurrentIdx + dir + photos.length) % photos.length;
+  const img = document.getElementById('lbImg');
+  img.style.opacity = '0';
+  img.style.transition = 'opacity 0.18s';
+  setTimeout(() => { img.src = photos[lbCurrentIdx]; img.style.opacity = '1'; }, 130);
+  document.getElementById('lbCounter').textContent = (lbCurrentIdx + 1) + ' / ' + photos.length;
+}
+document.getElementById('lbClose').onclick = closeLightbox;
+document.getElementById('lbPrev').onclick = () => lbNav(-1);
+document.getElementById('lbNext').onclick = () => lbNav(1);
+document.getElementById('lightbox').addEventListener('click', function(e) {
+  if (e.target === this) closeLightbox();
+});
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') lbNav(-1);
+  if (e.key === 'ArrowRight') lbNav(1);
+});
+let lbTouchX = 0;
+document.getElementById('lightbox').addEventListener('touchstart', e => { lbTouchX = e.touches[0].clientX; }, { passive: true });
+document.getElementById('lightbox').addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - lbTouchX;
+  if (Math.abs(dx) > 50) lbNav(dx < 0 ? 1 : -1);
+}, { passive: true });
+
+// Enter key to search lyric
+document.getElementById('lyricSearchInput').addEventListener('keydown', e => { if (e.key === 'Enter') searchLyrics(); });
 
 // ===== WISHES =====
 function loadWishes(){ return JSON.parse(localStorage.getItem('wishes')||'[]'); }
 function saveWishes(w){ localStorage.setItem('wishes',JSON.stringify(w)); }
-
 function submitWish(){
   const name=document.getElementById('wishName').value.trim();
   const text=document.getElementById('wishText').value.trim();
-  if(!name||!text){ alert('Vui lòng điền tên và lời chúc!'); return; }
+  if(!name||!text){ showToast('Vui lòng điền tên và lời chúc! 💌'); return; }
   const wishes=loadWishes();
   wishes.unshift({ id:Date.now(), name, text, time: new Date().toLocaleDateString('vi-VN') });
   saveWishes(wishes);
   document.getElementById('wishName').value='';
   document.getElementById('wishText').value='';
   renderWishes();
+  showToast('💖 Đã gửi lời chúc!');
 }
-
-function deleteWish(id){
-  const wishes=loadWishes().filter(w=>w.id!==id);
-  saveWishes(wishes);
-  renderWishes();
-}
-
+function deleteWish(id){ saveWishes(loadWishes().filter(w=>w.id!==id)); renderWishes(); }
 function renderWishes(){
   const wishes=loadWishes();
   const list=document.getElementById('wishList');
@@ -744,11 +998,12 @@ function renderWishes(){
     </div>
   `).join('');
 }
-
 function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+// ===== INIT =====
+renderGallery();
 renderWishes();
+restoreAll();
 </script>
-
 </body>
 </html>
