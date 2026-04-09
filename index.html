@@ -391,30 +391,34 @@ footer { text-align: center; padding: 30px 20px; font-size: 12px; color: rgba(25
   </div>
 
   <div class="up-item">
-    <label>🖼️ Hình nền (thư mục: background/)</label>
-    <div class="folder-hint">Chọn nhiều ảnh → tự động chuyển 15 giây/lần</div>
-    <label class="file-btn" for="bgFile">📁 Chọn ảnh từ thư mục background/</label>
+    <label>☁️ Tải từ GitHub</label>
+    <div class="folder-hint">background/ · baihat/ · kyniem/ — tự động tải khi mở trang</div>
+    <button class="file-btn" onclick="initFromGitHub(true)" style="cursor:pointer;border-style:solid;">🔄 Tải lại từ GitHub</button>
+    <div id="ghStatus" style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:6px;text-align:center;min-height:14px;"></div>
+  </div>
+
+  <div class="up-item">
+    <label>🖼️ Hình nền (ghi đè thủ công)</label>
+    <label class="file-btn" for="bgFile">📁 Chọn ảnh thủ công</label>
     <input type="file" id="bgFile" multiple accept="image/*" onchange="changeBg(event)">
     <div id="bgStatus" style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:4px;text-align:center;"></div>
   </div>
 
   <div class="up-item">
-    <label>🎵 Nhạc (thư mục: baihat/)</label>
-    <div class="folder-hint">Chọn thư mục baihat/ để tải toàn bộ nhạc</div>
-    <label class="file-btn" for="musicFile">📁 Chọn thư mục baihat/</label>
+    <label>🎵 Nhạc (ghi đè thủ công)</label>
+    <label class="file-btn" for="musicFile">📁 Chọn thư mục nhạc</label>
     <input type="file" id="musicFile" webkitdirectory multiple accept="audio/*" onchange="uploadMusic(event)">
   </div>
 
   <div class="up-item">
-    <label>🎤 Lyric (.txt) — hoặc tự tìm bằng tên bài hát ở trên</label>
+    <label>🎤 Lyric (.txt)</label>
     <label class="file-btn" for="lyricFile">📁 Chọn file lyric</label>
     <input type="file" id="lyricFile" accept=".txt" onchange="uploadLyric(event)">
   </div>
 
   <div class="up-item">
-    <label>📸 Ảnh kỷ niệm (thư mục: Kyniem/)</label>
-    <div class="folder-hint">Chọn thư mục Kyniem/ để tải toàn bộ ảnh</div>
-    <label class="file-btn" for="photoFile">📁 Chọn thư mục Kyniem/</label>
+    <label>📸 Ảnh kỷ niệm (ghi đè thủ công)</label>
+    <label class="file-btn" for="photoFile">📁 Chọn thư mục ảnh</label>
     <input type="file" id="photoFile" webkitdirectory multiple accept="image/*" onchange="addImages(event)">
   </div>
 
@@ -669,12 +673,18 @@ function loadTrack(i){
   autoSearchLyrics(name);
 }
 function togglePlay(){
-  if(!playlist.length) return;
+  if(!playlist.length && !ghPlaylist.length) return;
   if(isPlaying){ music.pause(); isPlaying=false; document.getElementById('playBtn').textContent='▶'; }
   else { music.play(); isPlaying=true; document.getElementById('playBtn').textContent='⏸'; }
 }
-function prev(){ if(!playlist.length) return; currentTrack=(currentTrack-1+playlist.length)%playlist.length; loadTrack(currentTrack); }
-function nextTrack(){ if(!playlist.length) return; currentTrack=(currentTrack+1)%playlist.length; loadTrack(currentTrack); }
+function prev(){ 
+  if(playlist.length){ currentTrack=(currentTrack-1+playlist.length)%playlist.length; loadTrack(currentTrack); }
+  else if(ghPlaylist.length){ currentTrack=(currentTrack-1+ghPlaylist.length)%ghPlaylist.length; loadGhTrack(currentTrack); }
+}
+function nextTrack(){ 
+  if(playlist.length){ currentTrack=(currentTrack+1)%playlist.length; loadTrack(currentTrack); }
+  else if(ghPlaylist.length){ currentTrack=(currentTrack+1)%ghPlaylist.length; loadGhTrack(currentTrack); }
+}
 function setVol(v){ music.volume=v; }
 music.ontimeupdate=()=>{
   if(!music.duration) return;
@@ -707,22 +717,38 @@ function setLyricsUI(text, songTitle) {
   document.getElementById('lyricSongName').textContent = songTitle || '';
   document.getElementById('lyricDrawerTitle').textContent = songTitle || '';
 }
+
+// Counter to cancel outdated lyric searches (fix race condition)
+let currentLyricSearchId = 0;
+
+function clearLyricsUI() {
+  document.getElementById('lyricContent').textContent = '';
+  document.getElementById('lyricDrawerText').textContent = '';
+  document.getElementById('lyricSongName').textContent = '';
+  document.getElementById('lyricDrawerTitle').textContent = '';
+}
 async function autoSearchLyrics(songName) {
   if (!songName) return;
+  clearLyricsUI();
   document.getElementById('lyricStatus').textContent = '🔍 Đang tự động tìm lyric...';
-  await doLyricSearch(songName);
+  const searchId = ++currentLyricSearchId;
+  await doLyricSearch(songName, searchId);
 }
 async function searchLyrics() {
   const q = document.getElementById('lyricSearchInput').value.trim();
   if (!q) { showToast('Vui lòng nhập tên bài hát!'); return; }
+  clearLyricsUI();
   document.getElementById('lyricStatus').textContent = '🔍 Đang tìm lyric...';
-  await doLyricSearch(q);
+  const searchId = ++currentLyricSearchId;
+  await doLyricSearch(q, searchId);
 }
-async function doLyricSearch(query) {
+async function doLyricSearch(query, searchId) {
   try {
     const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
+    // Nếu đã có bài mới được tìm sau → bỏ qua kết quả cũ
+    if (searchId !== currentLyricSearchId) return;
     if (!Array.isArray(data) || data.length === 0) {
       document.getElementById('lyricStatus').textContent = '❌ Không tìm thấy lyric cho: "' + query + '"';
       return;
@@ -737,6 +763,7 @@ async function doLyricSearch(query) {
     setLyricsUI(lyrics, songTitle);
     document.getElementById('lyricStatus').textContent = `✅ Đã gắn lyric: ${songTitle}`;
   } catch(e) {
+    if (searchId !== currentLyricSearchId) return;
     document.getElementById('lyricStatus').textContent = '⚠️ Không thể kết nối để tìm lyric';
   }
 }
@@ -1000,10 +1027,89 @@ function renderWishes(){
 }
 function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+// ===== GITHUB AUTO-LOAD =====
+const GH_REPO = 'myletang98-tho/xtntwedding';
+const GH_BRANCH = 'main';
+const GH_API = `https://api.github.com/repos/${GH_REPO}/contents`;
+
+function ghStatus(msg) {
+  const el = document.getElementById('ghStatus');
+  if (el) el.textContent = msg;
+}
+
+async function fetchGhFolder(folder) {
+  const res = await fetch(`${GH_API}/${folder}?ref=${GH_BRANCH}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} — ${folder}`);
+  return await res.json();
+}
+
+async function initFromGitHub(manual = false) {
+  ghStatus('⏳ Đang kết nối GitHub...');
+  let ok = 0, fail = 0;
+
+  // --- BACKGROUND ---
+  try {
+    const files = await fetchGhFolder('background');
+    const imgs = files.filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name));
+    if (imgs.length) {
+      bgImages = imgs.map(f => f.download_url);
+      startBgSlideshow();
+      const st = document.getElementById('bgStatus');
+      if (st) st.textContent = `✅ ${imgs.length} ảnh nền từ GitHub`;
+      ok++;
+    }
+  } catch(e) { console.warn('BG load fail:', e); fail++; }
+
+  // --- BAIHAT ---
+  try {
+    const files = await fetchGhFolder('baihat');
+    const audios = files.filter(f => /\.(mp3|wav|ogg|flac|m4a|aac)$/i.test(f.name));
+    if (audios.length) {
+      // Build playlist as objects with name + url
+      ghPlaylist = audios.sort((a,b) => a.name.localeCompare(b.name));
+      currentTrack = 0;
+      loadGhTrack(0);
+      ok++;
+    }
+  } catch(e) { console.warn('Music load fail:', e); fail++; }
+
+  // --- KYNIEM ---
+  try {
+    const files = await fetchGhFolder('kyniem');
+    const imgs = files.filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name));
+    if (imgs.length) {
+      photos = imgs.sort((a,b) => a.name.localeCompare(b.name)).map(f => f.download_url);
+      renderGallery();
+      ok++;
+    }
+  } catch(e) { console.warn('Kyniem load fail:', e); fail++; }
+
+  if (ok > 0 && fail === 0) ghStatus(`✅ Đã tải từ GitHub (${ok} thư mục)`);
+  else if (ok > 0) ghStatus(`⚠️ Tải được ${ok}/3 thư mục`);
+  else ghStatus('❌ Không thể kết nối GitHub');
+
+  if (manual) showToast(ok > 0 ? `✅ Đã tải ${ok}/3 thư mục từ GitHub` : '❌ Không kết nối được GitHub');
+}
+
+// GitHub-based playlist (separate from local file playlist)
+let ghPlaylist = [];  // array of GitHub file objects {name, download_url}
+
+function loadGhTrack(i) {
+  if (!ghPlaylist.length) return;
+  const file = ghPlaylist[i];
+  music.src = file.download_url;
+  const name = cleanSongName(file.name);
+  document.getElementById('musicNow').textContent = name;
+  document.getElementById('lyricSearchInput').value = name;
+  music.play().then(() => { isPlaying = true; document.getElementById('playBtn').textContent = '⏸'; }).catch(() => {});
+  autoSearchLyrics(name);
+}
+
 // ===== INIT =====
 renderGallery();
 renderWishes();
 restoreAll();
+initFromGitHub();
 </script>
 </body>
 </html>
