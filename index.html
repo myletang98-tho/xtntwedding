@@ -573,8 +573,19 @@ function uploadMusic(e){
   currentTrack=0;loadTrack(0);
   showToast('🎵 Đã tải '+playlist.length+' bài nhạc');
 }
+function resetLyricState(){
+  parsedLrc=[];
+  currentLyricIdx=-1;
+  _lastTimeSec=-1;
+  document.getElementById('lyricScrollContainer').innerHTML='<div style="font-size:13px;color:rgba(255,255,255,0.28);line-height:2;">Đang tải lyric...</div>';
+  document.getElementById('lyricDrawerText').innerHTML='<div style="font-size:15px;color:rgba(255,255,255,0.28);">Đang tải lyric...</div>';
+  document.getElementById('lyricSongName').textContent='';
+  document.getElementById('lyricDrawerTitle').textContent='';
+  document.getElementById('lyricStatus').textContent='';
+}
 function loadTrack(i){
   if(!playlist.length)return;
+  resetLyricState();
   music.src=URL.createObjectURL(playlist[i]);
   const name=cleanSongName(playlist[i].name);
   document.getElementById('musicNow').textContent=name;
@@ -584,45 +595,47 @@ function loadTrack(i){
 }
 function loadGhTrack(i){
   if(!ghPlaylist.length)return;
+  resetLyricState();
   const file=ghPlaylist[i];
   music.src=file.download_url;
   const name=cleanSongName(file.name);
   document.getElementById('musicNow').textContent=name;
   document.getElementById('lyricSearchInput').value=name;
   music.play().then(()=>{isPlaying=true;document.getElementById('playBtn').textContent='⏸';}).catch(()=>{});
-  // Try load LRC from GitHub lyric folder first, then auto search
   autoLoadGhLyric(file.name, name);
 }
 async function autoLoadGhLyric(audioFilename, songName){
-  // Try matching .lrc file from GitHub lyric/ folder
-  const baseName = audioFilename.replace(/\.[^.]+$/,'');
-  const possibleLrc = [baseName+'.lrc', baseName+'.LRC', songName+'.lrc', songName+'.LRC'];
-  for(const fname of possibleLrc){
-    try{
-      const url=`https://raw.githubusercontent.com/myletang98-tho/xtntwedding/main/lyric/${encodeURIComponent(fname)}`;
-      const res=await fetch(url);
-      if(res.ok){
-        const txt=await res.text();
-        if(txt.trim()){
-          const lrc=parseLRC(txt);
-          if(lrc.length>0){parsedLrc=lrc;renderLyricLines();document.getElementById('lyricStatus').textContent='✅ Lyric LRC từ GitHub: '+fname;document.getElementById('lyricSongName').textContent=songName;document.getElementById('lyricDrawerTitle').textContent=songName;return;}
+  const baseName=audioFilename.replace(/\.[^.]+$/,'');
+  // Step 1: Use GitHub API to list lyric/ folder and find exact match
+  try{
+    const apiRes=await fetch('https://api.github.com/repos/myletang98-tho/xtntwedding/contents/lyric?ref=main');
+    if(apiRes.ok){
+      const files=await apiRes.json();
+      if(Array.isArray(files)){
+        // Try exact match first (case-insensitive), prefer .lrc over .txt
+        const tryNames=[baseName, songName];
+        for(const tryName of tryNames){
+          const lrcMatch=files.find(f=>f.name.replace(/\.[^.]+$/,'').toLowerCase()===tryName.toLowerCase()&&f.name.toLowerCase().endsWith('.lrc'));
+          const txtMatch=files.find(f=>f.name.replace(/\.[^.]+$/,'').toLowerCase()===tryName.toLowerCase()&&f.name.toLowerCase().endsWith('.txt'));
+          const match=lrcMatch||txtMatch;
+          if(match){
+            const rawRes=await fetch(match.download_url);
+            if(rawRes.ok){
+              const txt=await rawRes.text();
+              if(txt.trim()&&!txt.includes('<!DOCTYPE')){
+                if(match.name.toLowerCase().endsWith('.lrc')){
+                  const lrc=parseLRC(txt);
+                  if(lrc.length>0){parsedLrc=lrc;renderLyricLines();document.getElementById('lyricStatus').textContent='✅ Karaoke: '+match.name;document.getElementById('lyricSongName').textContent=songName;document.getElementById('lyricDrawerTitle').textContent=songName;return;}
+                }
+                setPlainLyrics(txt,songName);document.getElementById('lyricStatus').textContent='✅ Lyric: '+match.name;return;
+              }
+            }
+          }
         }
       }
-    }catch(e){}
-  }
-  // Try .txt from GitHub
-  const possibleTxt = [baseName+'.txt', baseName+'.TXT', songName+'.txt', songName+'.TXT'];
-  for(const fname of possibleTxt){
-    try{
-      const url=`https://raw.githubusercontent.com/myletang98-tho/xtntwedding/main/lyric/${encodeURIComponent(fname)}`;
-      const res=await fetch(url);
-      if(res.ok){
-        const txt=await res.text();
-        if(txt.trim()){setPlainLyrics(txt,songName);document.getElementById('lyricStatus').textContent='✅ Lyric từ GitHub: '+fname;return;}
-      }
-    }catch(e){}
-  }
-  // Fallback: search online
+    }
+  }catch(e){}
+  // Step 2: Fallback online search
   autoSearchLyrics(songName);
 }
 
@@ -706,32 +719,44 @@ function renderLyricLines(){
 let currentLyricIdx = -1;
 function updateKaraoke(currentTime){
   if(!parsedLrc.length)return;
-  // Find active line
-  let idx=0;
-  for(let i=0;i<parsedLrc.length;i++){
-    if(parsedLrc[i].time<=currentTime)idx=i;
-    else break;
+  // Binary search for the last line whose time <= currentTime
+  let lo=0,hi=parsedLrc.length-1,idx=-1;
+  while(lo<=hi){
+    const mid=(lo+hi)>>1;
+    if(parsedLrc[mid].time<=currentTime){idx=mid;lo=mid+1;}
+    else hi=mid-1;
   }
   if(idx===currentLyricIdx)return;
   currentLyricIdx=idx;
-  // Update desktop
-  document.querySelectorAll('.lyric-line').forEach((el,i)=>{
-    el.classList.remove('active','past');
-    if(i===idx)el.classList.add('active');
-    else if(i<idx)el.classList.add('past');
+  // Update desktop — only touch changed elements to avoid full re-render
+  const lines=document.querySelectorAll('.lyric-line');
+  lines.forEach((el,i)=>{
+    const shouldActive=i===idx;
+    const shouldPast=i<idx;
+    const wasActive=el.classList.contains('active');
+    const wasPast=el.classList.contains('past');
+    if(shouldActive&&!wasActive){el.classList.remove('past');el.classList.add('active');}
+    else if(shouldPast&&!wasPast){el.classList.remove('active');el.classList.add('past');}
+    else if(!shouldActive&&!shouldPast&&(wasActive||wasPast)){el.classList.remove('active','past');}
   });
-  // Scroll active into center
-  const activeEl=document.getElementById('ll-'+idx);
-  if(activeEl){
-    const container=document.getElementById('lyricScrollContainer');
-    const offset=activeEl.offsetTop-(container.clientHeight/2)+(activeEl.clientHeight/2);
-    container.scrollTo({top:offset,behavior:'smooth'});
+  // Scroll active line into view (center of sidebar)
+  if(idx>=0){
+    const activeEl=document.getElementById('ll-'+idx);
+    if(activeEl){
+      const container=document.getElementById('lyricScrollContainer');
+      const targetScroll=activeEl.offsetTop-(container.clientHeight/2)+(activeEl.clientHeight/2);
+      container.scrollTo({top:Math.max(0,targetScroll),behavior:'smooth'});
+    }
   }
   // Update mobile
   document.querySelectorAll('.mobile-lyric-line').forEach((el,i)=>{
-    el.classList.remove('active','past');
-    if(i===idx)el.classList.add('active');
-    else if(i<idx)el.classList.add('past');
+    const shouldActive=i===idx;
+    const shouldPast=i<idx;
+    const wasActive=el.classList.contains('active');
+    const wasPast=el.classList.contains('past');
+    if(shouldActive&&!wasActive){el.classList.remove('past');el.classList.add('active');}
+    else if(shouldPast&&!wasPast){el.classList.remove('active');el.classList.add('past');}
+    else if(!shouldActive&&!shouldPast&&(wasActive||wasPast)){el.classList.remove('active','past');}
   });
 }
 
@@ -792,29 +817,85 @@ async function searchLyrics(){
 async function doLyricSearch(query,searchId){
   const statusEl=document.getElementById('lyricStatus');
 
-  // Step 1: Try GitHub lyric folder — both .lrc and .txt
-  const cleanQ=query.replace(/[\/\\:*?"<>|]/g,' ').trim();
-  const candidates=[cleanQ+'.lrc',cleanQ+'.LRC',cleanQ+'.txt',cleanQ+'.TXT'];
+  // Build many name variants to try
+  const clean=query.replace(/[\/\\:*?"<>|]/g,' ').trim();
+  // Also strip leading track numbers like "01 - XTNT" → "XTNT"
+  const stripped=clean.replace(/^\d+[\s\-_.]+/,'').trim();
+  // Collect unique variants
+  const bases=[...new Set([clean, stripped, clean.toLowerCase(), stripped.toLowerCase(), clean.toUpperCase(), stripped.toUpperCase()])];
+  const exts=['.lrc','.txt','.LRC','.TXT'];
+  const candidates=[];
+  bases.forEach(b=>exts.forEach(ext=>candidates.push(b+ext)));
+
+  statusEl.textContent='🔍 Đang thử '+candidates.length+' tên file trên GitHub...';
+
   for(const fname of candidates){
+    if(searchId!==currentLyricSearchId)return;
     try{
-      const url=`https://raw.githubusercontent.com/myletang98-tho/xtntwedding/main/lyric/${encodeURIComponent(fname)}`;
+      // Use raw URL — encodeURIComponent the filename only
+      const url='https://raw.githubusercontent.com/myletang98-tho/xtntwedding/main/lyric/'+encodeURIComponent(fname);
       const res=await fetch(url);
       if(res.ok){
         const txt=await res.text();
+        // Verify it's actual lyric content, not a GitHub 404 HTML page
+        if(!txt.trim()||txt.includes('<!DOCTYPE')||txt.includes('<html'))continue;
         if(searchId!==currentLyricSearchId)return;
-        if(txt.trim()){
-          if(fname.toLowerCase().endsWith('.lrc')){
-            const lrc=parseLRC(txt);
-            if(lrc.length>0){parsedLrc=lrc;renderLyricLines();statusEl.textContent='✅ Lyric LRC từ GitHub: '+fname;document.getElementById('lyricSongName').textContent=query;document.getElementById('lyricDrawerTitle').textContent=query;return;}
+        if(fname.toLowerCase().endsWith('.lrc')){
+          const lrc=parseLRC(txt);
+          if(lrc.length>0){
+            parsedLrc=lrc;renderLyricLines();
+            statusEl.textContent='✅ Karaoke LRC từ GitHub: '+fname;
+            document.getElementById('lyricSongName').textContent=query;
+            document.getElementById('lyricDrawerTitle').textContent=query;
+            return;
           }
-          setPlainLyrics(txt,query);
-          statusEl.textContent='✅ Lyric từ GitHub: '+fname;return;
         }
+        // Plain text lyric
+        setPlainLyrics(txt,query);
+        statusEl.textContent='✅ Lyric từ GitHub: '+fname;
+        return;
       }
     }catch(e){}
   }
 
-  // Step 2: Try lrclib.net (synced LRC preferred)
+  if(searchId!==currentLyricSearchId)return;
+
+  // Step 2: Try fetching GitHub API to list all lyric/ files and find best match
+  statusEl.textContent='🔍 Đang duyệt thư mục lyric/ trên GitHub...';
+  try{
+    const apiRes=await fetch('https://api.github.com/repos/myletang98-tho/xtntwedding/contents/lyric?ref=main');
+    if(apiRes.ok){
+      const files=await apiRes.json();
+      if(Array.isArray(files)){
+        // Find best matching file (case-insensitive contains)
+        const queryLower=stripped.toLowerCase();
+        const match=files.find(f=>{
+          const fn=f.name.replace(/\.[^.]+$/,'').toLowerCase();
+          return fn===queryLower||fn.includes(queryLower)||queryLower.includes(fn);
+        });
+        if(match){
+          if(searchId!==currentLyricSearchId)return;
+          statusEl.textContent='🔍 Tìm thấy: '+match.name+' — đang tải...';
+          const rawRes=await fetch(match.download_url);
+          if(rawRes.ok){
+            const txt=await rawRes.text();
+            if(txt.trim()&&!txt.includes('<!DOCTYPE')){
+              if(match.name.toLowerCase().endsWith('.lrc')){
+                const lrc=parseLRC(txt);
+                if(lrc.length>0){parsedLrc=lrc;renderLyricLines();statusEl.textContent='✅ Karaoke LRC: '+match.name;document.getElementById('lyricSongName').textContent=query;document.getElementById('lyricDrawerTitle').textContent=query;return;}
+              }
+              setPlainLyrics(txt,query);statusEl.textContent='✅ Lyric từ GitHub: '+match.name;return;
+            }
+          }
+        }
+      }
+    }
+  }catch(e){}
+
+  if(searchId!==currentLyricSearchId)return;
+
+  // Step 3: Try lrclib.net online (synced LRC preferred)
+  statusEl.textContent='🔍 Tìm online (lrclib.net)...';
   try{
     const res=await fetch('https://lrclib.net/api/search?q='+encodeURIComponent(query));
     if(res.ok){
@@ -827,7 +908,7 @@ async function doLyricSearch(query,searchId){
           if(lrc.length>0){
             parsedLrc=lrc;renderLyricLines();
             const title=(track.trackName||query)+(track.artistName?' — '+track.artistName:'');
-            statusEl.textContent='✅ Karaoke lyric: '+title;
+            statusEl.textContent='✅ Karaoke từ mạng: '+title;
             document.getElementById('lyricSongName').textContent=title;
             document.getElementById('lyricDrawerTitle').textContent=title;
             return;
@@ -841,9 +922,10 @@ async function doLyricSearch(query,searchId){
       }
     }
   }catch(e){}
+
   if(searchId!==currentLyricSearchId)return;
-  statusEl.textContent='❌ Không tìm thấy lyric. Hãy đặt file .lrc hoặc .txt vào thư mục lyric/ trên GitHub';
-  showToast('💡 Đặt file "'+cleanQ+'.lrc" vào thư mục lyric/ trên GitHub để có karaoke!',4500);
+  statusEl.textContent='❌ Không tìm thấy. Đặt file "'+stripped+'.lrc" vào thư mục lyric/ trên GitHub';
+  showToast('💡 Tên file cần là: "'+stripped+'.lrc" hoặc "'+stripped+'.txt" trong thư mục lyric/',5000);
 }
 
 // ===== LYRIC MOBILE TOGGLE =====
@@ -952,7 +1034,21 @@ async function initFromGitHub(manual=false){
   ghStatus('⏳ Đang kết nối GitHub...');
   let ok=0,fail=0;
   try{const files=await fetchGhFolder('background');const imgs=files.filter(f=>/\.(jpe?g|png|webp|gif)$/i.test(f.name));if(imgs.length){bgImages=imgs.map(f=>f.download_url);startBgSlideshow();const st=document.getElementById('bgStatus');if(st)st.textContent='✅ '+imgs.length+' ảnh nền';ok++;}}catch(e){fail++;}
-  try{const files=await fetchGhFolder('baihat');const audios=files.filter(f=>/\.(mp3|wav|ogg|flac|m4a|aac)$/i.test(f.name));if(audios.length){ghPlaylist=audios.sort((a,b)=>a.name.localeCompare(b.name));currentTrack=0;loadGhTrack(0);ok++;}}catch(e){fail++;}
+  try{
+    const files=await fetchGhFolder('baihat');
+    const audios=files.filter(f=>/\.(mp3|wav|ogg|flac|m4a|aac)$/i.test(f.name));
+    if(audios.length){
+      // Sort: XTNT first, then alphabetical
+      audios.sort((a,b)=>{
+        const aIsXTNT=/^XTNT\./i.test(a.name);
+        const bIsXTNT=/^XTNT\./i.test(b.name);
+        if(aIsXTNT&&!bIsXTNT)return -1;
+        if(!aIsXTNT&&bIsXTNT)return 1;
+        return a.name.localeCompare(b.name);
+      });
+      ghPlaylist=audios;currentTrack=0;loadGhTrack(0);ok++;
+    }
+  }catch(e){fail++;}
   try{const files=await fetchGhFolder('kyniem');const imgs=files.filter(f=>/\.(jpe?g|png|webp|gif)$/i.test(f.name));if(imgs.length){photos=imgs.sort((a,b)=>a.name.localeCompare(b.name)).map(f=>f.download_url);renderGallery();ok++;}}catch(e){fail++;}
   if(ok>0&&fail===0)ghStatus('✅ Đã tải từ GitHub ('+ok+'/3)');
   else if(ok>0)ghStatus('⚠️ Tải được '+ok+'/3 thư mục');
