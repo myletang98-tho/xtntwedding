@@ -122,32 +122,88 @@ body {
 .vol-row span { font-size: 14px; }
 input[type=range] { flex: 1; height: 3px; cursor: pointer; accent-color: var(--pink); }
 
-/* === LYRIC SEARCH IN MUSIC PANEL === */
-.lyric-search-row { margin-top: 14px; display: flex; gap: 8px; align-items: center; }
-.lyric-search-input {
-  flex: 1; background: rgba(255,255,255,0.07); border: 0.5px solid rgba(255,255,255,0.18);
-  border-radius: 10px; color: white; padding: 7px 12px; font-size: 12px;
-  font-family: 'Be Vietnam Pro', sans-serif;
+// ===== LYRIC SEARCH + TỰ ĐỘNG LẤY TỪ THƯ MỤC "lyric/" TRÊN GITHUB =====
+function cleanSongName(filename) {
+  return filename
+    .replace(/\.[^.]+$/, '')
+    .replace(/^\d+[\.\-\s]+/, '')
+    .replace(/[\[\(].*?[\]\)]/g, '')
+    .replace(/_/g, ' ')
+    .trim();
 }
-.lyric-search-input::placeholder { color: rgba(255,255,255,0.3); }
-.lyric-search-btn {
-  background: rgba(232,73,106,0.3); border: 0.5px solid rgba(232,73,106,0.5);
-  border-radius: 10px; color: white; padding: 7px 12px; font-size: 12px;
-  cursor: pointer; white-space: nowrap; transition: all 0.2s;
-  font-family: 'Be Vietnam Pro', sans-serif;
+
+function setLyricsUI(text, songTitle) {
+  document.getElementById('lyricContent').textContent = text;
+  document.getElementById('lyricDrawerText').textContent = text;
+  document.getElementById('lyricSongName').textContent = songTitle || '';
+  document.getElementById('lyricDrawerTitle').textContent = songTitle || '';
 }
-.lyric-search-btn:hover { background: rgba(232,73,106,0.5); }
-.lyric-status { font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; margin-top: 6px; min-height: 16px; }
 
-/* === FILE UPLOAD ITEMS === */
-.up-item label { display: block; font-size: 11px; color: var(--pink-light); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
-.up-item .folder-hint { font-size: 10px; color: rgba(255,255,255,0.3); margin-bottom: 6px; font-style: italic; }
-.file-btn { display: block; width: 100%; padding: 9px 14px; background: rgba(255,255,255,0.06); border: 0.5px dashed rgba(255,255,255,0.25); border-radius: 10px; color: rgba(255,255,255,0.7); font-size: 12px; cursor: pointer; text-align: center; transition: all 0.2s; }
-.file-btn:hover { border-color: var(--pink); color: var(--pink-light); }
-input[type=file] { display: none; }
-input[type=date].love-date { width: 100%; padding: 9px 14px; background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; font-size: 13px; font-family: 'Be Vietnam Pro', sans-serif; }
-input[type=date].love-date::-webkit-calendar-picker-indicator { filter: invert(1); }
+let currentLyricSearchId = 0;
 
+async function autoSearchLyrics(songName) {
+  if (!songName) return;
+  setLyricsUI('', songName);
+  document.getElementById('lyricStatus').textContent = '🔍 Đang tìm lyric...';
+  await doLyricSearch(songName);
+}
+
+async function searchLyrics() {
+  const q = document.getElementById('lyricSearchInput').value.trim();
+  if (!q) { showToast('Vui lòng nhập tên bài hát!'); return; }
+  setLyricsUI('', q);
+  document.getElementById('lyricStatus').textContent = '🔍 Đang tìm lyric...';
+  await doLyricSearch(q);
+}
+
+async function doLyricSearch(query) {
+  const statusEl = document.getElementById('lyricStatus');
+
+  // Bước 1: Tìm trên mạng trước
+  try {
+    const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const track = data.find(t => t.plainLyrics) || data[0];
+        const lyrics = track.plainLyrics || track.syncedLyrics || '';
+        if (lyrics) {
+          const title = (track.trackName || query) + (track.artistName ? ' — ' + track.artistName : '');
+          setLyricsUI(lyrics, title);
+          statusEl.textContent = `✅ Lyric từ mạng: ${title}`;
+          return;
+        }
+      }
+    }
+  } catch(e) { }
+
+  // Bước 2: Nếu không có trên mạng → lấy từ thư mục lyric/ trên GitHub
+  statusEl.textContent = '🔍 Không tìm thấy trên mạng, thử lấy file .txt từ GitHub...';
+
+  try {
+    const cleanName = query.replace(/[^a-zA-Z0-9\s]/g, ' ').trim().replace(/\s+/g, ' ');
+    const possibleFiles = [
+      cleanName + '.txt',
+      cleanName + '.TXT',
+      query + '.txt'
+    ];
+
+    for (let file of possibleFiles) {
+      const url = `https://raw.githubusercontent.com/myletang98-tho/xtntwedding/main/lyric/${encodeURIComponent(file)}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const lyrics = await res.text();
+        setLyricsUI(lyrics, query);
+        statusEl.textContent = `✅ Đã load lyric từ file: ${file}`;
+        return;
+      }
+    }
+  } catch(e) { }
+
+  // Nếu vẫn không có
+  statusEl.textContent = '❌ Không tìm thấy lyric cho bài này';
+  showToast('💡 Bạn có thể up file .txt lời bài hát vào thư mục "lyric" trên GitHub', 4500);
+}
 /* === SETTINGS FAB === */
 .settings-fab {
   position: fixed; bottom: 22px; left: 22px; z-index: 200;
@@ -1155,7 +1211,7 @@ function loadGhTrack(i) {
 renderGallery();
 renderWishes();
 restoreAll();
-updateLoveDays();     // ← Thêm dòng này
+updateLoveDays();   // đã sửa trước đó
 initFromGitHub();
 </script>
 </body>
