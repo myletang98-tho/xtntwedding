@@ -293,16 +293,54 @@ input[type=file]{display:none;}
   .main-content{padding-left:0;}
 }
 
-/* Lyric toggle & drawer (mobile) */
-.lyric-toggle{display:none;position:fixed;bottom:22px;right:22px;width:48px;height:48px;border-radius:50%;background:var(--red);border:none;color:white;font-size:18px;cursor:pointer;z-index:100;box-shadow:0 4px 20px rgba(192,21,42,0.5);}
-.lyric-drawer{display:none;position:fixed;inset:0;z-index:99;background:rgba(14,0,6,0.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:60px 24px 24px;overflow-y:auto;}
-.lyric-drawer.open{display:block;}
-.lyric-close{position:absolute;top:16px;right:16px;background:none;border:none;color:white;font-size:22px;cursor:pointer;}
-.lyric-drawer-title{font-family:'Playfair Display',serif;font-size:15px;color:var(--pink-light);margin-bottom:12px;font-style:italic;}
-.mobile-lyric-line{font-size:16px;color:rgba(255,255,255,0.35);line-height:2.2;white-space:pre-wrap;transition:color 0.4s ease;}
-.mobile-lyric-line.active{color:#fff !important;font-weight:500;text-shadow:0 0 12px rgba(232,73,106,0.7);}
-.mobile-lyric-line.past{color:rgba(232,73,106,0.4) !important;}
-@media(max-width:768px){.lyric-toggle{display:flex;align-items:center;justify-content:center;}}
+/* Lyric toggle button — ẩn trên mobile vì lyric inline rồi */
+.lyric-toggle{display:none;}
+
+/* ===== INLINE MOBILE LYRIC BOX ===== */
+.mobile-lyric-box{
+  display:none;
+  max-width:400px;margin:0 auto 24px;
+  padding:0 20px;
+}
+@media(max-width:768px){
+  .mobile-lyric-box{display:block;}
+}
+.mobile-lyric-inner{
+  background:rgba(255,255,255,0.05);
+  border:0.5px solid rgba(255,255,255,0.1);
+  border-radius:16px;
+  overflow:hidden;
+  position:relative;
+  height:148px; /* ~5 dòng */
+}
+/* fade top & bottom */
+.mobile-lyric-inner::before,
+.mobile-lyric-inner::after{
+  content:'';position:absolute;left:0;right:0;height:36px;z-index:2;pointer-events:none;
+}
+.mobile-lyric-inner::before{top:0;background:linear-gradient(to bottom,rgba(14,0,6,0.95),transparent);}
+.mobile-lyric-inner::after{bottom:0;background:linear-gradient(to top,rgba(14,0,6,0.95),transparent);}
+
+.mobile-lyric-scroll{
+  height:100%;overflow:hidden;
+  padding:16px 18px;
+  position:relative;
+}
+.mobile-lyric-line{
+  font-family:'Playfair Display',serif;
+  font-size:15px;line-height:1.75;
+  color:rgba(255,255,255,0.22);
+  text-align:center;
+  transition:color 0.3s ease, font-size 0.3s ease, font-weight 0.2s ease, opacity 0.3s ease;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.mobile-lyric-line.active{
+  color:#fff !important;
+  font-size:16px;font-weight:700;
+  text-shadow:0 0 16px rgba(232,73,106,0.9);
+}
+.mobile-lyric-line.past{color:rgba(200,60,90,0.45) !important;}
+.mobile-lyric-line.near{color:rgba(255,255,255,0.55) !important;}
 
 footer{text-align:center;padding:30px 20px;font-size:12px;color:rgba(255,255,255,0.2);font-family:'Playfair Display',serif;font-style:italic;}
 </style>
@@ -348,14 +386,6 @@ footer{text-align:center;padding:30px 20px;font-size:12px;color:rgba(255,255,255
     <div id="lyricContent" style="font-size:13px;color:rgba(255,255,255,0.28);line-height:2;">Nhập tên bài hát để tìm lyric...</div>
   </div>
 </aside>
-
-<!-- Lyric toggle + drawer mobile -->
-<button class="lyric-toggle" id="lyricToggle">🎵</button>
-<div class="lyric-drawer" id="lyricDrawer">
-  <button class="lyric-close" id="lyricClose">✕</button>
-  <div class="lyric-drawer-title" id="lyricDrawerTitle"></div>
-  <div id="lyricDrawerText" style="font-size:16px;color:rgba(255,255,255,0.35);line-height:2.2;white-space:pre-wrap;">Nhập tên bài hát để tìm lyric...</div>
-</div>
 
 <!-- Lightbox -->
 <div class="lightbox" id="lightbox">
@@ -448,6 +478,15 @@ footer{text-align:center;padding:30px 20px;font-size:12px;color:rgba(255,255,255
       <button class="lyric-search-btn" onclick="searchLyrics()">🔍 Tìm</button>
     </div>
     <div class="lyric-status" id="lyricStatus">Nhập tên bài hát và nhấn Tìm</div>
+  </div>
+
+  <!-- Mobile inline lyric box (chỉ hiện trên mobile) -->
+  <div class="mobile-lyric-box" id="mobileLyricBox">
+    <div class="mobile-lyric-inner">
+      <div class="mobile-lyric-scroll" id="mobilelyricScroll">
+        <div id="lyricDrawerText"></div>
+      </div>
+    </div>
   </div>
 
   <div class="gallery-section">
@@ -578,9 +617,10 @@ function resetLyricState(){
   currentLyricIdx=-1;
   _lastTimeSec=-1;
   document.getElementById('lyricScrollContainer').innerHTML='<div style="font-size:13px;color:rgba(255,255,255,0.28);line-height:2;">Đang tải lyric...</div>';
-  document.getElementById('lyricDrawerText').innerHTML='<div style="font-size:15px;color:rgba(255,255,255,0.28);">Đang tải lyric...</div>';
+  const mbox=document.getElementById('lyricDrawerText');
+  mbox.innerHTML='<div style="font-size:14px;color:rgba(255,255,255,0.28);text-align:center;padding-top:20px;">Đang tải lyric...</div>';
+  mbox.style.transform='';
   document.getElementById('lyricSongName').textContent='';
-  document.getElementById('lyricDrawerTitle').textContent='';
   document.getElementById('lyricStatus').textContent='';
 }
 function loadTrack(i){
@@ -692,28 +732,51 @@ function parseLRC(lrcText){
 }
 
 function renderLyricLines(){
-  // Desktop sidebar
+  // ---- Desktop sidebar ----
   const container=document.getElementById('lyricScrollContainer');
   container.innerHTML='';
   if(parsedLrc.length===0){container.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,0.28);">Không có lyric...</div>';return;}
   parsedLrc.forEach((line,i)=>{
     const div=document.createElement('div');
-    div.className='lyric-line';
-    div.id='ll-'+i;
-    div.textContent=line.text;
+    div.className='lyric-line';div.id='ll-'+i;div.textContent=line.text;
     container.appendChild(div);
   });
-  // Mobile drawer
-  const mobileContainer=document.getElementById('lyricDrawerText');
-  mobileContainer.innerHTML='';
+  // ---- Mobile inline box ----
+  const mbox=document.getElementById('lyricDrawerText');
+  mbox.innerHTML='';
   parsedLrc.forEach((line,i)=>{
     const div=document.createElement('div');
-    div.className='mobile-lyric-line';
-    div.id='mll-'+i;
-    div.textContent=line.text;
-    mobileContainer.appendChild(div);
+    div.className='mobile-lyric-line';div.id='mll-'+i;div.textContent=line.text;
+    mbox.appendChild(div);
   });
   currentLyricIdx=-1;
+  updateMobileLyricWindow(-1);
+}
+
+// Show only 5 lines around active: 2 before, active, 2 after
+// Uses translate to slide lines into view — no scroll, instant window shift
+const LINE_H=29; // px per line (lineHeight 1.75 * 15px ≈ 26px + margin)
+function updateMobileLyricWindow(idx){
+  const mbox=document.getElementById('lyricDrawerText');
+  if(!mbox)return;
+  const lines=mbox.querySelectorAll('.mobile-lyric-line');
+  if(!lines.length)return;
+  // Shift the container so active line sits at vertical center (slot 2 of 5)
+  const centerSlot=2; // 0-indexed, middle of 5
+  const offsetY=-(idx*LINE_H)+(centerSlot*LINE_H);
+  mbox.style.transform='translateY('+offsetY+'px)';
+  mbox.style.transition='transform 0.32s cubic-bezier(0.4,0,0.2,1)';
+  // Update classes: only show active + 2 before + 2 after, hide rest
+  lines.forEach((el,i)=>{
+    const dist=i-idx;
+    el.classList.remove('active','past','near');
+    if(dist===0){el.classList.add('active');el.style.opacity='1';}
+    else if(dist===-1||dist===1){el.classList.add('near');el.style.opacity='0.7';}
+    else if(dist===-2||dist===2){el.style.opacity='0.35';el.classList.add(i<idx?'past':'');}
+    else{el.style.opacity='0';}
+    // past color
+    if(i<idx&&dist<-2)el.classList.add('past');
+  });
 }
 
 let currentLyricIdx = -1;
@@ -748,39 +811,31 @@ function updateKaraoke(currentTime){
       container.scrollTo({top:Math.max(0,targetScroll),behavior:'smooth'});
     }
   }
-  // Update mobile
-  document.querySelectorAll('.mobile-lyric-line').forEach((el,i)=>{
-    const shouldActive=i===idx;
-    const shouldPast=i<idx;
-    const wasActive=el.classList.contains('active');
-    const wasPast=el.classList.contains('past');
-    if(shouldActive&&!wasActive){el.classList.remove('past');el.classList.add('active');}
-    else if(shouldPast&&!wasPast){el.classList.remove('active');el.classList.add('past');}
-    else if(!shouldActive&&!shouldPast&&(wasActive||wasPast)){el.classList.remove('active','past');}
-  });
+  // Update mobile inline window
+  updateMobileLyricWindow(idx);
 }
 
-function setPlainLyrics(text, songTitle){
-  // Plain text — no sync, just display
+function setPlainLyrics(text,songTitle){
   parsedLrc=[];
   const container=document.getElementById('lyricScrollContainer');
   container.innerHTML='';
-  const lines=text.split('\n');
-  lines.forEach((line)=>{
+  const lines=text.split('\n').filter(l=>l.trim());
+  lines.forEach(line=>{
     const div=document.createElement('div');
-    div.className='lyric-line';
-    div.textContent=line;
+    div.className='lyric-line';div.textContent=line;
     div.style.color='rgba(255,255,255,0.45)';
     container.appendChild(div);
   });
-  document.getElementById('lyricDrawerText').innerHTML='';
-  lines.forEach(line=>{
+  // Mobile inline — plain text, all lines visible, no window slide
+  const mbox=document.getElementById('lyricDrawerText');
+  mbox.innerHTML='';mbox.style.transform='';
+  lines.forEach((line,i)=>{
     const div=document.createElement('div');
-    div.className='mobile-lyric-line';
-    div.textContent=line;
-    document.getElementById('lyricDrawerText').appendChild(div);
+    div.className='mobile-lyric-line';div.id='mll-'+i;div.textContent=line;
+    div.style.opacity='0.55';
+    mbox.appendChild(div);
   });
-  if(songTitle){document.getElementById('lyricSongName').textContent=songTitle;document.getElementById('lyricDrawerTitle').textContent=songTitle;}
+  if(songTitle){document.getElementById('lyricSongName').textContent=songTitle;}
 }
 
 // ===== LYRIC FILE UPLOAD =====
@@ -929,8 +984,8 @@ async function doLyricSearch(query,searchId){
 }
 
 // ===== LYRIC MOBILE TOGGLE =====
-document.getElementById('lyricToggle').onclick=()=>document.getElementById('lyricDrawer').classList.add('open');
-document.getElementById('lyricClose').onclick=()=>document.getElementById('lyricDrawer').classList.remove('open');
+// ===== LYRIC MOBILE INLINE — no drawer needed =====
+function scrollMobileToActive(){} // no-op, handled in updateKaraoke
 
 // ===== BG SLIDESHOW =====
 let bgImages=[],bgCurrentIdx=0,bgActiveLayer=1,bgSlideshowTimer=null;
