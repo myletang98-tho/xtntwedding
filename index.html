@@ -902,10 +902,11 @@ function updateLoveDays() {
   const loveDate = new Date('2024-10-15T00:00:00');
   const today = new Date();
   
+  // Reset giờ để tính chính xác số ngày
   today.setHours(0, 0, 0, 0);
   loveDate.setHours(0, 0, 0, 0);
 
-  const diffTime = today - loveDate;
+  const diffTime = today.getTime() - loveDate.getTime();
   const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
   daysEl.innerHTML = `💑 Đã bên nhau <strong>${days.toLocaleString('vi-VN')}</strong> ngày`;
@@ -1154,6 +1155,7 @@ function loadGhTrack(i) {
 renderGallery();
 renderWishes();
 restoreAll();
+updateLoveDays();     // ← Thêm dòng này
 initFromGitHub();
 </script>
 </body>
