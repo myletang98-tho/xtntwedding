@@ -895,13 +895,26 @@ function uploadLyric(e){
 document.getElementById('lyricToggle').onclick=()=>document.getElementById('lyricDrawer').classList.add('open');
 document.getElementById('lyricClose').onclick=()=>document.getElementById('lyricDrawer').classList.remove('open');
 
-// ===== LOVE DAYS =====
-function updateLoveDays(){
-  const d=document.getElementById('loveDateInput').value;
-  if(!d){ document.getElementById('daysTogether').innerHTML=''; return; }
-  const days=Math.floor((new Date()-new Date(d))/86400000);
-  document.getElementById('daysTogether').innerHTML=`💑 Đã bên nhau <strong>${days.toLocaleString()}</strong> ngày`;
-  localStorage.setItem('loveDate',d);
+// ===== SỐ NGÀY BÊN NHAU - CỐ ĐỊNH TỪ 15/10/2024 =====
+function updateLoveDays() {
+  const daysEl = document.getElementById('daysTogether');
+  
+  // Ngày bắt đầu cố định là 15/10/2024
+  const loveDate = new Date('2024-10-15T00:00:00');
+  const today = new Date();
+  
+  // Reset giờ để tính chính xác
+  today.setHours(0, 0, 0, 0);
+  loveDate.setHours(0, 0, 0, 0);
+
+  const diffTime = today - loveDate;
+  const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (days >= 0) {
+    daysEl.innerHTML = `💑 Đã bên nhau <strong>${days.toLocaleString('vi-VN')}</strong> ngày`;
+  } else {
+    daysEl.innerHTML = `💑 Chưa đến ngày bắt đầu`;
+  }
 }
 
 // ===== COUNTDOWN =====
